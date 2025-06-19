@@ -1,0 +1,318 @@
+{
+  "name": "EllaScheduleBooking",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "fb1ba383-119a-43d6-8645-30e9f1a45e91",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "ec25582f-3fa3-4d8b-a53e-69b71fcf85b4",
+      "name": "Webhook",
+      "webhookId": "fb1ba383-119a-43d6-8645-30e9f1a45e91"
+    },
+    {
+      "parameters": {
+        "options": {
+          "includeInputFields": false
+        }
+      },
+      "type": "n8n-nodes-base.dateTime",
+      "typeVersion": 2,
+      "position": [
+        220,
+        0
+      ],
+      "id": "a2884aca-7c70-424d-aef0-4b0d17e12c6b",
+      "name": "Date & Time"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Book the user's specified meeting using the \"Calendar\" tool and the provided {{ $('Webhook').item.json.body.Date }} and {{ $('Webhook').item.json.body.Time }}. The meeting will last a duration of only 30 minutes. Please reformat the {{ $('Webhook').item.json.body.Time }} must be in RFC3339 format Example: (e.g., 2025-06-13T14:00:00 or 2025-06-13T14:00:00-07:00) and send that formatted time to the google calendar node for scheduling. \n\n {{ $json.currentDate }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "Configure the output to have the following structure: \n1.  Success message\n2. Confirmed meeting date and time\n3. Ask if there is anything else the customer needs, if no response or the customer says no, please end the call. \n\nExample: The meeting has been successfully scheduled for March 17, 2025, from 2:00 PM to 2:30 PM. Is there anything else I can assist with? (Wait) if no response or the answer is no, please end the politely end the call. "
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.9,
+      "position": [
+        472,
+        0
+      ],
+      "id": "21df1436-fe6b-4e58-a978-99133c3d2bf2",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        440,
+        220
+      ],
+      "id": "7e237631-02b0-403e-87d1-afb0c55bbbc9",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "w9Dpue418YO6N0j7",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.2,
+      "position": [
+        1056,
+        0
+      ],
+      "id": "3bf56dbb-4227-4fe1-a4a0-31e265e77317",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "options": {
+          "prompt": "=Instructions:\n--------------\n{instructions}\nThe output must convert the `Date` and `Time` into a Google Calendar-compatible RFC3339 format.  \n- Add a `\"start\"` field: formatted timestamp from the `{{ $('Webhook').item.json.body.Date }}` and `{{ $('Webhook').item.json.body.Time }}` provided (e.g., `2025-06-13T14:00:00-04:00`).  \n- Add an `\"end\"` field: exactly 1 hour after the `start` time.  \n- Assume Eastern Time (UTC-04:00) if no timezone is provided.  \n- Keep all other fields unchanged.  \n- Return a valid JSON object.\n\n--------------\nCompletion:\n--------------\n{completion}\n--------------\nThe above completion did not satisfy the constraints given in the instructions.\n\nError:\n--------------\n{error}\n--------------\n\nPlease try again. Only respond with a valid JSON object that satisfies all the constraints laid out in the instructions.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserAutofixing",
+      "typeVersion": 1,
+      "position": [
+        580,
+        240
+      ],
+      "id": "e8296856-efe6-45fd-92ff-61161e745824",
+      "name": "Auto-fixing Output Parser"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        768,
+        420
+      ],
+      "id": "9d58cf61-de05-409d-afa4-bcd7a0ba416d",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "w9Dpue418YO6N0j7",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"Date\": \"June 13, 2025\",\n  \"fullName\": \"Mike\",\n  \"Time\": \"2 p.m.\",\n  \"email\": \"kmcneil757@gmail.com\",\n  \"webhookUrl\": \"https://kmcneil.app.n8n.cloud/webhook/fb1ba383-119a-43d6-8645-30e9f1a45e91\",\n  \"executionMode\": \"production\",\n  \"start\": \"2025-06-13T14:00:00-04:00\",\n  \"end\": \"2025-06-13T15:00:00-04:00\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [
+        920,
+        460
+      ],
+      "id": "112d2e8e-e230-4e71-8ab0-d2281f42282c",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "figsaiautomation@gmail.com",
+          "mode": "list",
+          "cachedResultName": "figsaiautomation@gmail.com"
+        },
+        "start": "={{ $json.output.start }}",
+        "end": "={{ $json.output.end }}",
+        "additionalFields": {
+          "attendees": [
+            "={{ $('Webhook').item.json.body.email }}"
+          ],
+          "description": "={{ $('Webhook').item.json.body.fullName }} Figs AI Demo",
+          "summary": "=FIGS AI Demo Scheduled by Ella w/ {{ $('Webhook').item.json.body.fullName }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        820,
+        0
+      ],
+      "id": "49f4b397-2489-43fc-96c4-551db7559310",
+      "name": "Google Calendar1",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "auiveumlt6NmPYlS",
+          "name": "Google Calendar account"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "kmcneil.app.n8n.cloud",
+            "user-agent": "Python/3.12 aiohttp/3.11.16",
+            "content-length": "96",
+            "accept": "*/*",
+            "accept-encoding": "gzip, br",
+            "cdn-loop": "cloudflare; loops=1; subreqs=1",
+            "cf-connecting-ip": "34.67.146.145",
+            "cf-ew-via": "15",
+            "cf-ipcountry": "US",
+            "cf-ray": "94e5f6e024371130-ORD",
+            "cf-visitor": "{\"scheme\":\"https\"}",
+            "cf-worker": "n8n.cloud",
+            "content-type": "application/json",
+            "x-forwarded-for": "34.67.146.145, 172.71.1.171",
+            "x-forwarded-host": "kmcneil.app.n8n.cloud",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "traefik-prod-users-gwc-3-6db8488cf7-kl95v",
+            "x-is-trusted": "yes",
+            "x-real-ip": "34.67.146.145"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "Date": "June 13, 2025",
+            "fullName": "Mike",
+            "Time": "2 p.m.",
+            "email": "kmcneil757@gmail.com"
+          },
+          "webhookUrl": "https://kmcneil.app.n8n.cloud/webhook/fb1ba383-119a-43d6-8645-30e9f1a45e91",
+          "executionMode": "production"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Date & Time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Date & Time": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Google Calendar1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Auto-fixing Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Auto-fixing Output Parser",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Auto-fixing Output Parser",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Calendar1": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "63cb0c22-0773-486e-9f4e-1a27efe6e8c8",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "001fa8e53cd85d998324a5057f502011382873a507426b660d754b2f2e07f78c"
+  },
+  "id": "791fyunWJtcou94r",
+  "tags": []
+}
