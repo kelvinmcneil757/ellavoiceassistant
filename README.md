@@ -11,6 +11,10 @@ Ella is powered by two key n8n workflows:
 1. **`EllagetAvailability`** – Checks if a user-requested time is free in your calendar, then intelligently responds with availability or alternatives.
 2. **`EllaScheduleBooking`** – Books the meeting directly into your Google Calendar and confirms it conversationally with the caller.
 
+![Ella Schedule Booking](./Image%206-19-25%20at%2010.32%E2%80%AFAM.png)
+![Ella Get Availability](./Image%206-19-25%20at%2010.33%E2%80%AFAM.png)
+
+
 These workflows combine AI reasoning, smart date handling, and calendar tooling into a seamless voice-first UX.
 
 ---
